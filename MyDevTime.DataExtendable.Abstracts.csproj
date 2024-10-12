@@ -10,7 +10,7 @@
         <Copyright>Benedikt Papiorek</Copyright>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <RepositoryUrl>https://github.com/Akkyen/DataExtendable.Abstracts</RepositoryUrl>
+        <RepositoryUrl>https://github.com/Akkyen/MyDevTime.DataExtendable.Abstracts</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <RootNamespace>MyDevTime.DataExtendable.Abstracts</RootNamespace>
         <TargetFrameworks>net8.0;net9.0;netstandard2.1</TargetFrameworks>
