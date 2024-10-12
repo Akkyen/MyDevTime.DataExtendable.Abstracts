@@ -181,28 +181,21 @@ public abstract class ADataExtension<T> : IDataExtension
         {
             return false;
         }
-        
-        
+
+
         try
         {
-            bool rValue = false;
-            
-            
-            _rwls.EnterReadLock();
-            
-            T dataExtension = _extensions.First(x =>
-                string.Equals(x.GetExtensionId(), extensionId, StringComparison.CurrentCultureIgnoreCase));
-            
-            _rwls.ExitReadLock();
-            
+            bool rValue;
+
 
             _rwls.EnterWriteLock();
-            
+
+            T dataExtension = _extensions.First(x =>
+                string.Equals(x.GetExtensionId(), extensionId, StringComparison.CurrentCultureIgnoreCase));
+
             rValue = _extensions.Remove(dataExtension);
-            
-            _rwls.ExitWriteLock();
-            
-            
+
+
             return rValue;
         }
         catch (InvalidOperationException)
@@ -212,6 +205,10 @@ public abstract class ADataExtension<T> : IDataExtension
         catch (Exception e)
         {
             throw new ExceptionWithReturnCode($"Unexpected Exception:\n{e}", int.MaxValue);
+        }
+        finally
+        {
+            _rwls.ExitWriteLock();
         }
     }
 
@@ -248,8 +245,6 @@ public abstract class ADataExtension<T> : IDataExtension
             
             rValue = _extensions.First(x => string.Equals(x.GetExtensionId(), extensionId, StringComparison.CurrentCultureIgnoreCase));
             
-            _rwls.ExitWriteLock();
-            
             
             return rValue;
         }
@@ -260,6 +255,10 @@ public abstract class ADataExtension<T> : IDataExtension
         catch (Exception e)
         {
             throw new ExceptionWithReturnCode($"Unexpected Exception:\n{e}", int.MaxValue);
+        }
+        finally
+        {
+            _rwls.ExitWriteLock();
         }
     }
 
