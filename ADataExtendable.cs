@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using MyDevTime.DataExtendable.Interfaces;
 using MyDevTime.ExceptionsWithReturnCode;
 
@@ -21,6 +22,10 @@ public class ADataExtendable<T>
     /// </summary>
     private ISet<T> _extensions;
     
+    /// <summary>
+    /// A lock to manage read and write access in this class
+    /// </summary>
+    private ReaderWriterLockSlim _rwls;
     #endregion
     
     
@@ -43,6 +48,7 @@ public class ADataExtendable<T>
     public ADataExtendable()
     {
         _extensions = new HashSet<T>();
+        _rwls = new ReaderWriterLockSlim();
     }
     
     /// <summary>
@@ -52,6 +58,7 @@ public class ADataExtendable<T>
     public ADataExtendable(ISet<T> extensions)
     {
         _extensions = extensions;
+        _rwls = new ReaderWriterLockSlim();
     }
 
     #endregion
@@ -76,7 +83,18 @@ public class ADataExtendable<T>
             throw new InvalidOperationExceptionWithReturnCode($"{nameof(_extensions)} is null.", 3);
         }
         
-        return _extensions.Add(extension);
+
+        bool rValue = false;
+        
+        
+        _rwls.EnterWriteLock();
+        
+        rValue = _extensions.Add(extension);
+        
+        _rwls.ExitWriteLock();
+        
+
+        return rValue;
     }
 
     
@@ -111,10 +129,25 @@ public class ADataExtendable<T>
         
         try
         {
+            bool rValue = false;
+            
+            
+            _rwls.EnterReadLock();
+            
             T dataExtension = _extensions.First(x =>
                 string.Equals(x.GetExtensionId(), extensionId, StringComparison.CurrentCultureIgnoreCase));
+            
+            _rwls.ExitReadLock();
+            
 
-            return _extensions.Remove(dataExtension);
+            _rwls.EnterWriteLock();
+            
+            rValue = _extensions.Remove(dataExtension);
+            
+            _rwls.ExitWriteLock();
+            
+            
+            return rValue;
         }
         catch (InvalidOperationException)
         {
@@ -148,11 +181,21 @@ public class ADataExtendable<T>
         {
             throw new ArgumentExceptionWithReturnCode($@"{nameof(_extensions)} is empty.", 4);
         }
-        
+
         
         try
         {
-            return _extensions.First(x => string.Equals(x.GetExtensionId(), extensionId, StringComparison.CurrentCultureIgnoreCase));
+            T rValue;
+            
+            
+            _rwls.EnterWriteLock();
+            
+            rValue = _extensions.First(x => string.Equals(x.GetExtensionId(), extensionId, StringComparison.CurrentCultureIgnoreCase));
+            
+            _rwls.ExitWriteLock();
+            
+            
+            return rValue;
         }
         catch (InvalidOperationException)
         {
